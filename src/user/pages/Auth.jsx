@@ -6,12 +6,17 @@ import { VALIDATOR_EMAIL, VALIDATOR_MINLENGTH, VALIDATOR_REQUIRE } from '../../s
 import { useForm } from '../../shared/components/hooks/form-hook'
 import Button from '../../shared/components/FormElements/Button'
 import { AuthContext } from '../../shared/context/auth-context'
+import LoadingSpinner from '../../shared/components/UIElements/LoadingSpinner'
+import ErrorModal from '../../shared/components/UIElements/ErrorModal'
+import { useHttpClient } from '../../shared/components/hooks/http-hook'
 
 const Auth = () => {
 
     const auth = useContext(AuthContext)
 
     const [isLoginMode, setIsLoginMode] = useState(true);
+
+    const { isLoading, error, sendRequest, clearError } = useHttpClient()
 
     const [formState, inputHandler, setFormData] = useForm({
         email: {
@@ -48,26 +53,69 @@ const Auth = () => {
         setIsLoginMode(prevMode => !prevMode)
     }
 
-    const authSubmitHandler = event => {
+    const authSubmitHandler = async event => {
         event.preventDefault();
-        console.log(formState.inputs);
-        auth.login();
+
+        if(isLoginMode) {
+            try {
+                const responseData = await sendRequest(
+                    'http://localhost:5000/api/users/login', 
+                    'POST', 
+                    JSON.stringify({                        // stringify converts javascript object to json as backend expects to recieve json data 
+                        email: formState.inputs.email.value,      // key-value pair to be sent to backend
+                        password: formState.inputs.password.value
+                    }),                              // to specify it is a POST request
+                    {
+                        'Content-Type': 'application/json'        // to tell the backend what type of data it is receiving so body-parser in backend can convert it to regular javascript object 
+                    }
+                )
+
+                auth.login(responseData.user.id);
+            } catch(err) {
+
+            }
+
+        } else {
+            try {
+                const responseData = await sendRequest(
+                    'http://localhost:5000/api/users/signup', 
+                    'POST',                              // to specify it is a POST request
+                    JSON.stringify({                       // stringify converts javascript object to json as backend expects to recieve json data
+                        name: formState.inputs.name.value,      // key-value pair to be sent to backend
+                        email: formState.inputs.email.value,
+                        password: formState.inputs.password.value
+                    }),
+                    {
+                        'Content-Type': 'application/json'       // to tell the backend what type of data it is receiving so body-parser in backend can convert it to regular javascript object 
+                    }
+                )
+
+                auth.login(responseData.user.id);
+            } catch(err) {
+                
+            }
+        }
+
     }
 
   return (
+    <>
+    <ErrorModal error={error} onClear={clearError} />
     <Card className="authentication">
+        {isLoading && <LoadingSpinner asOverlay/>}
         <h2>Login Required</h2>
         <hr />
         <form onSubmit={authSubmitHandler}>
             {!isLoginMode && <Input element="input" id="name" type="text" label="Your Name" validators={[VALIDATOR_REQUIRE]} errorText="Please enter a name" onInput={inputHandler} />}
             <Input element="input" id="email" type="email" label="Email" validators={[VALIDATOR_EMAIL()]} errorText="Please enter valid email address" onInput={inputHandler}/>
-            <Input element="input" id="password" type="password" label="Password" validators={[VALIDATOR_MINLENGTH(5)]} errorText="Invalid password, minimum 5 characters required" onInput={inputHandler}/>
+            <Input element="input" id="password" type="password" label="Password" validators={[VALIDATOR_MINLENGTH(5)]} errorText="Invalid password, minimum 6 characters required" onInput={inputHandler}/>
             <Button type="submit" disabled={!formState.isValid}>
                 {isLoginMode ? 'LOGIN' : 'SIGNUP'}
             </Button>
         </form>
         <Button inverse onClick={switchModeHandler}>SWITCH TO {isLoginMode ? 'SIGNUP' : 'LOGIN'}</Button>
     </Card>
+    </>
   )
 }
 

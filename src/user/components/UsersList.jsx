@@ -19,7 +19,7 @@ const UsersList = (props) => {
             {
                 props.items.map(user => {
                     return (
-                    <UserItem key={user.id} id={user.id} image={user.image} name={user.name} placeCount={user.places} />
+                    <UserItem key={user.id} id={user.id} image={user.image} name={user.name} placeCount={user.places.length} />
                 )})
             }
         </ul>
