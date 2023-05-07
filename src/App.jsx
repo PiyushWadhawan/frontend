@@ -7,26 +7,60 @@ import UserPlaces from './places/pages/UserPlaces';
 import UpdatePlace from './places/pages/UpdatePlace';
 import Auth from './user/pages/Auth';
 import { AuthContext } from './shared/context/auth-context';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+let logoutTimer;
 
 function App() {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [token, setToken] = useState(false)
+  const [tokenExpirationDate, setTokenExpirationData] = useState();
   const [userId, setUserId] = useState(false)
 
-  const login = useCallback((uid) => {
-    setIsLoggedIn(true)
+  const login = useCallback((uid, token, expirationDate) => {
+    setToken(token)
     setUserId(uid)
+    const tokenExpirationDate = expirationDate || new Date(new Date().getTime() + 1000 * 60 * 60)
+    setTokenExpirationData(tokenExpirationDate)
+    // storing on browser inbuilt storage called local storage so we don't loose authentication if we refresh the page
+    localStorage.setItem('userData', JSON.stringify({
+      userId: uid, 
+      token: token, 
+      expiration: tokenExpirationDate.toISOString()
+    }))
   }, [])
 
   const logout = useCallback(() => {
-    setIsLoggedIn(false)
+    setToken(null)
+    setTokenExpirationData(null)
     setUserId(null)
+    // removing the data stored in browser storage so we stay logged out on refreshing the page
+    localStorage.removeItem('userData')  
   }, [])
+
+  useEffect(() => {
+    if(token && tokenExpirationDate) {
+      const remainingTine = tokenExpirationDate.getTime() - new Date().getTime();
+      logoutTimer = setTimeout(logout, remainingTine);
+    } else {
+      clearTimeout(logoutTimer);
+    }
+  }, [token, logout, tokenExpirationDate])
+
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('userData'))
+    if(
+      storedData && 
+      storedData.token && 
+      new Date(storedData.expiration) > new Date()
+      ) {
+      login(storedData.userId, storedData.token, new Date(storedData.expiration))
+    }
+  }, [login])
 
   let routes;
 
-  if(isLoggedIn) {
+  if(token) {
     routes = (
       <>
         <Route path='/' element={<Users/>}/>
@@ -48,7 +82,7 @@ function App() {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn: isLoggedIn, userId: userId, login: login, logout: logout }}>
+    <AuthContext.Provider value={{ isLoggedIn: !!token, token: token, userId: userId, login: login, logout: logout }}>
       <Router>
         <MainNavigation/>
         <main>

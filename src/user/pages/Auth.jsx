@@ -76,7 +76,7 @@ const Auth = () => {
                     }
                 )
 
-                auth.login(responseData.user.id);
+                auth.login(responseData.userId, responseData.token);
             } catch(err) {
 
             }
@@ -94,7 +94,7 @@ const Auth = () => {
                     formData,                            // no need to soecify content type FormData does it automatically by default
                 )
 
-                auth.login(responseData.user.id);
+                auth.login(responseData.userId, responseData.token);
             } catch(err) {
                 
             }
