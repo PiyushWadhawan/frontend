@@ -65,7 +65,7 @@ const Auth = () => {
         if(isLoginMode) {
             try {
                 const responseData = await sendRequest(
-                    'http://localhost:5000/api/users/login', 
+                    process.env.REACT_APP_BACKEND_URL+'/users/login', 
                     'POST', 
                     JSON.stringify({                        // stringify converts javascript object to json as backend expects to recieve json data 
                         email: formState.inputs.email.value,      // key-value pair to be sent to backend
@@ -89,7 +89,7 @@ const Auth = () => {
                 formData.append('password', formState.inputs.password.value)
                 formData.append('image', formState.inputs.image.value)
                 const responseData = await sendRequest(
-                    'http://localhost:5000/api/users/signup', 
+                    process.env.REACT_APP_BACKEND_URL+'/users/signup', 
                     'POST',                              // to specify it is a POST request
                     formData,                            // no need to soecify content type FormData does it automatically by default
                 )
@@ -113,7 +113,7 @@ const Auth = () => {
             {!isLoginMode && <ImageUpload center id="image" onInput={inputHandler} errorText="Please provide an image" />}
             {!isLoginMode && <Input element="input" id="name" type="text" label="Your Name" validators={[VALIDATOR_REQUIRE]} errorText="Please enter a name" onInput={inputHandler} />}
             <Input element="input" id="email" type="email" label="Email" validators={[VALIDATOR_EMAIL()]} errorText="Please enter valid email address" onInput={inputHandler}/>
-            <Input element="input" id="password" type="password" label="Password" validators={[VALIDATOR_MINLENGTH(5)]} errorText="Invalid password, minimum 6 characters required" onInput={inputHandler}/>
+            <Input element="input" id="password" type="password" label="Password" validators={[VALIDATOR_MINLENGTH(5)]} errorText="Invalid password, minimum 5 characters required" onInput={inputHandler}/>
             <Button type="submit" disabled={!formState.isValid}>
                 {isLoginMode ? 'LOGIN' : 'SIGNUP'}
             </Button>

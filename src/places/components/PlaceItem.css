@@ -1,5 +1,5 @@
 .place-item {
-    margin: 1rem 0;
+    margin: 2rem 0;
   }
   
   .place-item__content {
@@ -49,12 +49,25 @@
   }
 
   .map-container {
-    height: 15rem;
+    height: 20rem;
     width: 100%;
+  }
+  
+  
+  @media (min-width: 400px) {
+    .place-item__image {
+      height: 20rem;
+    } 
+  }
+
+  @media (min-width: 600px) {
+    .place-item__image {
+      height: 25rem;
+    } 
   }
   
   @media (min-width: 768px) {
     .place-item__image {
-      height: 20rem;
+      height: 30rem;
     } 
   }
