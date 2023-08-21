@@ -11,7 +11,7 @@ import { AuthContext } from './shared/context/auth-context';
 import { useCallback, useEffect, useState } from 'react';
 import LoadingSpinner from './shared/components/UIElements/LoadingSpinner';
 
-// Code splitting: code downloaded only when page is visited
+// Code splitting: code downloaded only when the page is visited
 const Users = React.lazy(() => import('./user/pages/Users'))
 const NewPlace = React.lazy(() => import('./places/pages/NewPlace'))
 const UserPlaces = React.lazy(() => import('./places/pages/UserPlaces'))
